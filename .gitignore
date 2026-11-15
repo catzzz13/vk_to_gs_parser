@@ -1,0 +1,23 @@
+# Секретные данные (НИКОГДА не загружать!)
+vk-parser/token.txt
+vk-parser/credentials.json
+vk-parser/settings.json
+vk-parser/group_ids.txt
+vk-parser/user_cache.json
+
+# Скомпилированные файлы и тяжелые папки
+vk-parser/target/
+__pycache__/
+*.exe
+*.pdb
+
+# Результаты работы
+vk-parser/output/
+*.xlsx
+*.log
+
+# Системные файлы
+.vscode/
+.idea/
+.DS_Store
+Thumbs.db

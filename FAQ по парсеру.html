@@ -1,0 +1,394 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>VK Parser — Полное руководство</title>
+    <style>
+        :root {
+            --primary: #2563eb;
+            --primary-dark: #1e40af;
+            --bg: #f8fafc;
+            --text: #334155;
+            --code-bg: #1e293b;
+            --code-text: #e2e8f0;
+            --border: #cbd5e1;
+            --terminal-bg: #0f172a;
+        }
+        
+        body {
+            font-family: 'Segoe UI', -apple-system, BlinkMacSystemFont, Roboto, Arial, sans-serif;
+            line-height: 1.6;
+            color: var(--text);
+            background-color: var(--bg);
+            margin: 0;
+            padding: 0;
+        }
+
+        .container {
+            max-width: 850px;
+            margin: 40px auto;
+            background: #fff;
+            padding: 50px 60px;
+            box-shadow: 0 10px 25px rgba(0,0,0,0.05);
+            border-radius: 12px;
+        }
+
+        h1 {
+            color: var(--primary-dark);
+            text-align: center;
+            font-size: 2.2em;
+            margin-bottom: 10px;
+            border-bottom: 3px solid var(--primary);
+            padding-bottom: 20px;
+        }
+
+        h2 {
+            color: var(--primary);
+            margin-top: 40px;
+            padding-bottom: 8px;
+            border-bottom: 1px solid var(--border);
+            scroll-margin-top: 20px;
+        }
+
+        h3 {
+            color: var(--text);
+            margin-top: 25px;
+        }
+
+        a {
+            color: var(--primary);
+            text-decoration: none;
+            transition: color 0.2s;
+        }
+
+        a:hover {
+            color: var(--primary-dark);
+            text-decoration: underline;
+        }
+
+        /* Оглавление */
+        .toc {
+            background: #eff6ff;
+            padding: 25px 30px;
+            border-radius: 8px;
+            border-left: 5px solid var(--primary);
+            margin: 30px 0;
+        }
+
+        .toc h3 {
+            margin-top: 0;
+            color: var(--primary-dark);
+        }
+
+        .toc ul {
+            list-style-type: none;
+            padding-left: 0;
+            margin-bottom: 0;
+        }
+
+        .toc li {
+            margin-bottom: 10px;
+            font-size: 1.05em;
+        }
+
+        .toc li::before {
+            content: "→";
+            color: var(--primary);
+            margin-right: 10px;
+            font-weight: bold;
+        }
+
+        /* Блоки кода */
+        pre {
+            background: var(--code-bg);
+            color: var(--code-text);
+            padding: 15px 20px;
+            border-radius: 8px;
+            overflow-x: auto;
+            font-family: 'Consolas', 'Courier New', monospace;
+            font-size: 0.95em;
+            line-height: 1.5;
+        }
+
+        code {
+            background: #e2e8f0;
+            color: #b91c1c;
+            padding: 2px 6px;
+            border-radius: 4px;
+            font-family: 'Consolas', 'Courier New', monospace;
+            font-size: 0.9em;
+        }
+
+        pre code {
+            background: transparent;
+            color: inherit;
+            padding: 0;
+        }
+
+        /* Эмуляция терминала */
+        .terminal {
+            background: var(--terminal-bg);
+            color: #cbd5e1;
+            padding: 20px;
+            border-radius: 8px;
+            font-family: 'Consolas', 'Courier New', monospace;
+            font-size: 0.85em;
+            line-height: 1.4;
+            overflow-x: auto;
+            white-space: pre;
+            box-shadow: inset 0 0 10px rgba(0,0,0,0.5);
+            margin: 20px 0;
+        }
+        
+        .terminal .time { color: #64748b; }
+        .terminal .info { color: #38bdf8; font-weight: bold; }
+        .terminal .path { color: #cbd5e1; }
+        .terminal .success { color: #4ade80; font-weight: bold; }
+        .terminal .warn { color: #fbbf24; font-weight: bold; }
+        .terminal .value { color: #f472b6; }
+
+        /* Плашки */
+        .note, .warning, .important, .info-box {
+            padding: 15px 20px;
+            border-radius: 8px;
+            margin: 20px 0;
+        }
+
+        .note {
+            background-color: #f0fdf4;
+            border-left: 5px solid #22c55e;
+            color: #166534;
+        }
+
+        .warning {
+            background-color: #fffbeb;
+            border-left: 5px solid #f59e0b;
+            color: #92400e;
+        }
+
+        .important {
+            background-color: #fef2f2;
+            border-left: 5px solid #ef4444;
+            color: #991b1b;
+        }
+
+        .info-box {
+            background-color: #eff6ff;
+            border-left: 5px solid #3b82f6;
+            color: #1e40af;
+        }
+
+        ul { padding-left: 20px; }
+        li { margin-bottom: 8px; }
+
+        /* Стили для печати в PDF */
+        @media print {
+            body { background: #fff; }
+            .container { box-shadow: none; margin: 0; padding: 0; max-width: 100%; }
+            h2 { page-break-after: avoid; }
+            pre, .terminal { page-break-inside: avoid; }
+            .toc { page-break-inside: avoid; }
+            .note, .warning, .important, .info-box { page-break-inside: avoid; }
+            a { text-decoration: none; color: #000; }
+            a[href^="#"]::after { content: ""; }
+        }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <h1>VK Parser<br><span style="font-size: 0.5em; font-weight: normal; color: #64748b;">Полное руководство по настройке и эксплуатации</span></h1>
+
+    <div class="toc">
+        <h3>Содержание</h3>
+        <ul>
+            <li><a href="#intro">1. Что это за программа и как она работает?</a></li>
+            <li><a href="#vk-api">2. Настройка VK API (Токен)</a></li>
+            <li><a href="#google-sheets">3. Настройка Google Sheets (Куда выгружать данные)</a></li>
+            <li><a href="#config">4. Настройка конфигурации (settings.json)</a></li>
+            <li><a href="#logic">5. Расшифровка пометок и логика фильтрации</a></li>
+            <li><a href="#export">6. Структура выгрузки (Excel и Sheets)</a></li>
+            <li><a href="#launch">7. Запуск и пример успешного выполнения</a></li>
+            <li><a href="#troubleshooting">8. Решение частых проблем (FAQ)</a></li>
+        </ul>
+    </div>
+
+    <h2 id="intro">1. Что это за программа и как она работает?</h2>
+    <p>Это умный парсер, который создан для автоматизации проверки заданий. Программа заходит в указанную вами группу ВКонтакте, находит темы (обсуждения), связанные с вашей командой, скачивает оттуда все комментарии, очищает их от мусора и красиво раскладывает в Excel-файл и/или Google-таблицу.</p>
+    
+    <p><strong>Что уже сделано для вас (особенности кода):</strong></p>
+    <ul>
+        <li>Программа защищена от блокировок со стороны ВКонтакте (встроен «умный лимитер» запросов).</li>
+        <li>Она кэширует имена пользователей: если запустить её дважды за сутки, она не будет тратить время на повторную загрузку имен из VK.</li>
+        <li>В консоли при запуске отображается имя автора программы.</li>
+    </ul>
+
+    <h2 id="vk-api">2. Настройка VK API (Токен)</h2>
+    <p>Чтобы программа могла читать комментарии, ей нужен цифровой пропуск — <strong>Токен</strong>.</p>
+    
+    <h3>2.1. Как получить токен?</h3>
+    <ul>
+        <li>Зайдите на сайт <a href="https://vkhost.github.io/" target="_blank">vkhost.github.io</a>.</li>
+        <li>Выберите приложение <strong>Kate Mobile</strong>.</li>
+        <li>Нажмите «Получить токен». Вас перекинет на сайт ВК, где нужно разрешить доступ. <em>Важно: программа запрашивает права `wall`, `groups`, `offline`. Право `offline` обязательно, иначе токен сгорит через час.</em></li>
+        <li>После авторизации скопируйте длинную строку из адресной строки браузера (она начинается с <code>vk1.a...</code>).</li>
+    </ul>
+
+    <h3>2.2. Куда его вставить?</h3>
+    <p>Откройте файл <code>vk-parser/token.txt</code> (блокнотом) и вставьте токен туда. Удалите все лишние символы и комментарии, чтобы в файле осталась <strong>только одна строка с токеном</strong>.</p>
+
+    <h2 id="google-sheets">3. Настройка Google Sheets (Опционально)</h2>
+    <p>Если вы хотите, чтобы данные сами падали в гугл-таблицу, нужно создать «робота» (Сервисный аккаунт).</p>
+
+    <h3>3.1. Создание робота в Google Cloud</h3>
+    <ul>
+        <li>Зайдите в <a href="https://console.cloud.google.com/" target="_blank">Google Cloud Console</a> и создайте проект.</li>
+        <li>В разделе «Библиотека» (Library) найдите и включите <strong>Google Sheets API</strong> и <strong>Google Drive API</strong>.</li>
+        <li>В разделе «IAM & Admin» -> «Service Accounts» создайте аккаунт.</li>
+        <li>В этом аккаунте нажмите «Manage Keys» -> «Create new key» -> выберите <strong>JSON</strong>. Скачается файл.</li>
+        <li>Переименуйте этот файл в <code>credentials.json</code> и положите в папку <code>vk-parser</code> (заменив шаблон).</li>
+    </ul>
+
+    <div class="important">
+        <strong>Самое важное! Не пропустите!</strong><br>
+        <ol style="margin-top: 10px; margin-bottom: 0;">
+            <li>Откройте ваш <code>credentials.json</code> и найдите адрес в поле <code>"client_email"</code>. Скопируйте его.</li>
+            <li>Откройте вашу Google-таблицу и нажмите кнопку <strong>«Поделиться»</strong>.</li>
+            <li>Вставьте скопированный адрес робота и дайте ему права <strong>«Редактор»</strong>. Без этого программа не сможет записать данные.</li>
+        </ol>
+    </div>
+
+    <h2 id="config">4. Настройка конфигурации (settings.json)</h2>
+    <p>Файл <code>settings.json</code> — это мозг программы. Откройте его блокнотом.</p>
+    
+    <pre><code>{
+  "group_id": 233578280,
+  "team_name": "Канониры Пеликана",
+  "spreadsheet": "Моя таблица",
+  "worksheet": "Лист1",
+  "credentials": "credentials.json",
+  "output": "output",
+  "max_comments_per_topic": 10000,
+  "requests_per_second": 3
+}</code></pre>
+
+    <ul>
+        <li><strong><code>group_id</code></strong>: ID группы ВК (только цифры).</li>
+        <li><strong><code>team_name</code></strong>: Название вашей команды. Программа ищет темы, где есть слово «задание» и это название.</li>
+        <li><strong><code>spreadsheet</code></strong>: Точное название Google-таблицы (без ссылок, просто имя).</li>
+        <li><strong><code>worksheet</code></strong>: Название листа внутри этой таблицы (например, «Лист1»).</li>
+        <li><strong><code>requests_per_second</code></strong>: Скорость. Лимит ВК — 3 запроса в секунду. Оставьте <code>3</code>.</li>
+    </ul>
+
+    <h2 id="logic">5. Расшифровка пометок и логика фильтрации</h2>
+    <p>Программа не просто копирует всё подряд, а анализирует текст.</p>
+    
+    <ul>
+        <li><strong>Игнорирование мусора:</strong> Комментарии от сообществ (не людей) и пустые сообщения не попадают в итоговую таблицу.</li>
+    </ul>
+
+    <div class="warning">
+        <strong>Метка «ВРЕМЯ»</strong><br>
+        Если человек в комментарии кидает ссылку на пост (вида <code>vk.com/wall-123_456</code>), программа проверяет дату этого поста. Если комментарий написан <strong>позже, чем через 36 часов</strong> после публикации поста, в начало текста добавляется метка <code>ВРЕМЯ</code>.<br>
+        <em>Зачем:</em> Вы сразу видите, кто сдал задание с опозданием.
+    </div>
+
+    <div class="warning">
+        <strong>Метка «ЧИТОР»</strong><br>
+        Программа сравнивает текст комментариев в рамках одного задания. Если кто-то скопировал чужой ответ (текст совпадает на 100% без учета регистра), в начало добавляется метка <code>ЧИТОР</code>.<br>
+        <em>Зачем:</em> Мгновенное выявление списанных ответов.
+    </div>
+
+    <h2 id="export">6. Структура выгрузки (Excel и Sheets)</h2>
+    
+    <h3>6.1. Excel</h3>
+    <p>Файл создается в папке <code>output</code> и называется <code>НазваниеГруппы_Дата.xlsx</code>. Каждое задание — это отдельный лист (вкладка). Колонки:</p>
+    <ul>
+        <li><strong>A: ID</strong> — ID пользователя.</li>
+        <li><strong>B: Упоминание</strong> — тег <code>[id123|Имя]</code>.</li>
+        <li><strong>C: Имя</strong> — имя и фамилия.</li>
+        <li><strong>D: Профиль</strong> — ссылка на страницу.</li>
+        <li><strong>E: Комментарий</strong> — текст (с метками «ВРЕМЯ» или «ЧИТОР»).</li>
+        <li><strong>F: Время</strong> — дата и время отправки.</li>
+    </ul>
+
+    <h3>6.2. Google Sheets</h3>
+    <p>Данные пишутся в виде блоков, начиная с колонки <strong>D</strong> (первая строка зарезервирована под заголовки):</p>
+    <ul>
+        <li>Колонки D, F, H и т.д. — ссылки на профили.</li>
+        <li>Колонки E, G, I и т.д. — тексты комментариев.</li>
+        <li>Задания автоматически сортируются по номеру (программа ищет слово «Задание N»).</li>
+    </ul>
+
+    <h2 id="launch">7. Запуск и пример успешного выполнения</h2>
+    <p>Для запуска просто откройте файл <code>run.bat</code> в папке <code>vk-parser</code>.</p>
+
+    <h3>7.1. Как выглядит идеальный запуск</h3>
+    <p>Вот пример реального лога. Обратите внимание: программа собрала данные за 1 минуту, сохранила Excel и залила данные в Google Sheets.</p>
+
+    <div class="terminal">
+<span class="info">[INFO]</span> <span class="time">[09:08:17]</span> <span class="path">vk_parser:</span> Группа ID: 233578280
+<span class="info">[INFO]</span> <span class="time">[09:08:17]</span> <span class="path">vk_parser:</span> Команда: Канониры Пеликана
+<span class="info">[INFO]</span> <span class="time">[09:08:17]</span> <span class="path">vk_parser::user_cache:</span> Loaded 257 cached users
+<span class="info">[INFO]</span> <span class="time">[09:08:17]</span> <span class="path">vk_parser::parser:</span> Группа: Голландец 111125
+<span class="info">[INFO]</span> <span class="time">[09:08:17]</span> <span class="path">vk_parser::parser:</span> Всего тем: 28
+<span class="info">[INFO]</span> <span class="time">[09:08:17]</span> <span class="path">vk_parser::parser:</span> Подходящих тем под 'Канониры Пеликана': 7
+<span class="info">[INFO]</span> <span class="time">[09:08:17]</span> <span class="path">vk_parser::parser:</span> [1/7] Канониры Пеликана. Задание за зелен
+<span class="info">[INFO]</span> <span class="time">[09:08:17]</span> <span class="path">vk_parser::parser:</span>   → 30 комментариев
+<span class="info">[INFO]</span> <span class="time">[09:08:17]</span> <span class="path">vk_parser::parser:</span> [2/7] Канониры Пеликана. Задание за отзыв
+<span class="info">[INFO]</span> <span class="time">[09:08:17]</span> <span class="path">vk_parser::parser:</span>   → 54 комментариев
+<span class="info">[INFO]</span> <span class="time">[09:08:17]</span> <span class="path">vk_parser::parser:</span> [3/7] Канониры Пеликана. Задание №3
+<span class="info">[INFO]</span> <span class="time">[09:08:17]</span> <span class="path">vk_parser::parser:</span>   → 201 комментариев
+<span class="info">[INFO]</span> <span class="time">[09:08:17]</span> <span class="path">vk_parser::parser:</span> [4/7] Канониры Пеликана. Задание №5
+<span class="info">[INFO]</span> <span class="time">[09:08:17]</span> <span class="path">vk_parser::parser:</span>   → 180 комментариев
+<span class="info">[INFO]</span> <span class="time">[09:08:17]</span> <span class="path">vk_parser::parser:</span> [5/7] Канониры Пеликана. Задание №4
+<span class="info">[INFO]</span> <span class="time">[09:08:17]</span> <span class="path">vk_parser::parser:</span>   → 197 комментариев
+<span class="info">[INFO]</span> <span class="time">[09:08:17]</span> <span class="path">vk_parser::parser:</span> [6/7] Канониры Пеликана. Задание №2
+<span class="info">[INFO]</span> <span class="time">[09:08:17]</span> <span class="path">vk_parser::parser:</span>   → 214 комментариев
+<span class="info">[INFO]</span> <span class="time">[09:08:17]</span> <span class="path">vk_parser::parser:</span> [7/7] Канониры Пеликана. Задание №1
+<span class="info">[INFO]</span> <span class="time">[09:08:17]</span> <span class="path">vk_parser::parser:</span>   → 237 комментариев
+<span class="info">[INFO]</span> <span class="time">[09:08:17]</span> <span class="path">vk_parser:</span> Итого: 7 тем, 1113 комментариев
+<span class="success">[INFO]</span> <span class="time">[09:08:17]</span> <span class="path">vk_parser:</span> Excel: <span class="value">output\Голландец 111125_2026-11-15.xlsx</span>
+<span class="warn">[WARN]</span> <span class="time">[09:08:17]</span> <span class="path">vk_parser::gsheets:</span> Не хватает колонок для 'Канониры Пеликана. Задание за отзыв'
+<span class="success">[INFO]</span> <span class="time">[09:08:17]</span> <span class="path">vk_parser::gsheets:</span> Записано 2118 значений в Sheets
+Press any key to continue . . .
+    </div>
+
+    <div class="info-box">
+        <strong>Почему появилось предупреждение (WARN)?</strong><br>
+        Это <strong>не ошибка</strong>. В коде программы есть ограничение: в Google Sheets она пишет данные только до 14-й колонки (до колонки N). Так как у вас 7 заданий, каждое из которых занимает по 2 колонки (начиная с D), программа просто не смогла вместить последнее задание в лимит и пропустила его <em>только в гугл-таблице</em>. В Excel-файл выгрузились <strong>все 7 заданий</strong> без ограничений.
+    </div>
+
+    <h2 id="troubleshooting">8. Решение частых проблем</h2>
+
+    <div class="warning">
+        <strong>Ошибка: <code>Sheets подключение: Таблица '' не найдена</code></strong><br>
+        <strong>Решение:</strong> Проверьте, что в <code>settings.json</code> в поле <code>spreadsheet</code> написано точное имя таблицы, и вы дали права «Редактор» роботу из <code>credentials.json</code>.
+    </div>
+
+    <div class="warning">
+        <strong>Ошибка: <code>VK API error [5]: User authorization failed</code></strong><br>
+        <strong>Решение:</strong> Токен в <code>token.txt</code> неверный или устарел. Сгенерируйте новый (обязательно с правами <code>offline</code>).
+    </div>
+
+    <div class="warning">
+        <strong>Ошибка: <code>VK API error [6]: Too many requests per second</code></strong><br>
+        <strong>Решение:</strong> Вы превысили лимит запросов ВК. Программа сама подождет и продолжит работу, но чтобы этого не было, убедитесь, что в <code>settings.json</code> стоит <code>"requests_per_second": 3</code>.
+    </div>
+
+    <div class="note">
+        <strong>Программа «зависла» и ничего не пишет в консоль</strong><br>
+        <strong>Причина:</strong> Она проверяет ссылки на посты для метки «ВРЕМЯ». Если в комментариях сотни ссылок, это требует много запросов.<br>
+        <strong>Решение:</strong> Просто подождите 1–2 минуты, она справится. <em>(Мы уже убрали искусственные паузы в коде, поэтому это происходит только при огромном количестве уникальных ссылок на посты).</em>
+    </div>
+
+    <hr style="margin-top: 40px; border: none; border-top: 1px solid var(--border);">
+    <p style="text-align: center; color: #94a3b8; font-size: 0.9em;">
+        VK Parser FAQ &copy; 2026<br>
+        Авторство приложения принадлежит <a href="https://vk.ru/baunchik" target="_blank" style="color: #64748b; text-decoration: underline;">https://vk.ru/baunchik</a>
+    </p>
+</div>
+
+</body>
+</html>
